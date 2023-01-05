@@ -16,9 +16,9 @@ def humidity():
             value = getPayloadOne(frame)
             writeInfluxDB("humidity", value)
         elif digits == 10 :    
-            getPayloadOne(frame)
+            value = getPayloadOne(frame)
             writeInfluxDB("humidity", value)
-            getPayloadTwo(frame)
+            value = getPayloadTwo(frame)
             writeInfluxDB("humidity", value)
 
         return request.data
@@ -32,12 +32,12 @@ def temperature():
 
         if digits == 6 :
             value = getPayloadOne(frame)
-            writeInfluxDB("humidity", value)
+            writeInfluxDB("temperature", value)
         elif digits == 10 :    
-            getPayloadOne(frame)
-            writeInfluxDB("humidity", value)
-            getPayloadTwo(frame)
-            writeInfluxDB("humidity", value)
+            value = getPayloadOne(frame)
+            writeInfluxDB("temperature", value)
+            value = getPayloadTwo(frame)
+            writeInfluxDB("temperature", value)
 
         return request.data
 
@@ -54,17 +54,17 @@ def getCorePayload(frame):
 
 def getPayloadOne(frame) :
     code = getCorePayload(frame)
-    return code[3:6]
+    return int(code[3:6], 16) / 10
 
 def getPayloadTwo(frame) :
     code = getCorePayload(frame)
-    return int(code[7:10])
+    return int(code[7:10], 16) / 10
 
 def writeInfluxDB(key, value) :
     bucket = "HD"
     org = "HD"
-    token = "token"
-    url="localhost:8086"
+    token = "cjWOPbA7PCEwKQzvTOlgHy3dsQVJyJ_SNjG0T5Dxc60GWyDtNRyqj9_zWEIicVvxJ3mUWM11O9-wz-tj71eqUw=="
+    url="http://localhost:8086"
 
     client = influxdb_client.InfluxDBClient(
         url=url,
@@ -74,5 +74,5 @@ def writeInfluxDB(key, value) :
 
     write_api = client.write_api(write_options=SYNCHRONOUS)
 
-    p = influxdb_client.Point("my_measures").tag(key, value)
+    p = influxdb_client.Point("my-measure").field(key, value)
     write_api.write(bucket=bucket, org=org, record=p)
